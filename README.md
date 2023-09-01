@@ -78,6 +78,87 @@ spec:
       port: 80
       targetPort: 3000
 ```
+* Set up various types of services (NodePort, ClusterIP, LoadBalancer) to manage access to the deployed pods.
+creating the deployment using the above yaml file where service 
+type is LoadBalancer.
+
+```$ kubectl apply -f node-app-deployment.yml```
+
+```
+deployment.apps/sample-node-app created
+service/node-app-service created
+```
+check the status of deployment and service
+```
+faisa@FaisalBhatti MINGW64 /d/DiceCamp/DevOps_Assignment4 (main)
+$ kubectl get deployment
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+sample-node-app   1/1     1            1           2m47s
+
+faisa@FaisalBhatti MINGW64 /d/DiceCamp/DevOps_Assignment4 (main)
+$ kubectl get service
+NAME               TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+kubernetes         ClusterIP      10.96.0.1        <none>        443/TCP        30h
+node-app-service   LoadBalancer   10.100.242.127   <pending>     80:31628/TCP   2m55s
+
+```
+Running the service for accessing the app outside the cluster.
+```
+faisa@FaisalBhatti MINGW64 /d/DiceCamp/DevOps_Assignment4 (main)
+$ minikube service node-app-service
+|-----------|------------------|-------------|----------------------------|
+| NAMESPACE |       NAME       | TARGET PORT |            URL             |
+|-----------|------------------|-------------|----------------------------|
+| default   | node-app-service |          80 | http://172.22.225.70:31628 |
+|-----------|------------------|-------------|----------------------------|
+🎉  Opening service default/node-app-service in default browser...
+
+```
+Changing the service type to Node port . by setting a selector. The service exposes port 80 and forwards the traffic to the pods’ port 3000.
+
+```yaml
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: node-app-service
+
+spec:
+  selector:
+    app: sample-node-app
+
+  type: NodePort
+
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+```
+
+```
+faisa@FaisalBhatti MINGW64 /d/DiceCamp/DevOps_Assignment4 (main)
+$ kubectl apply -f node-app-deployment-nodeport.yml
+deployment.apps/sample-node-app created
+service/node-app-service created
+
+faisa@FaisalBhatti MINGW64 /d/DiceCamp/DevOps_Assignment4 (main)
+$ kubectl get service
+NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+kubernetes         ClusterIP   10.96.0.1        <none>        443/TCP        30h
+node-app-service   NodePort    10.111.249.172   <none>        80:30956/TCP   10s
+
+faisa@FaisalBhatti MINGW64 /d/DiceCamp/DevOps_Assignment4 (main)
+$ minikube service node-app-service
+|-----------|------------------|-------------|----------------------------|
+| NAMESPACE |       NAME       | TARGET PORT |            URL             |
+|-----------|------------------|-------------|----------------------------|
+| default   | node-app-service |          80 | http://172.22.225.70:30956 |
+|-----------|------------------|-------------|----------------------------|
+🎉  Opening service default/node-app-service in default browser...
+
+```
+
+
 
    
 

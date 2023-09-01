@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: sample-node-app
+  labels:
+  namespace:  default
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-node-app
+
+  template:
+    metadata:
+      labels:
+        app: sample-node-app
+    
+    spec:
+      containers:
+      - name: sample-node-app
+        image: faisalriazz/my-app-node:1.0
+        ports:
+        - containerPort: 3000
+
+#service to expose external interface.
+---
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: node-app-service
+
+spec:
+  selector:
+    app: sample-node-app
+
+  type: NodePort
+
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
